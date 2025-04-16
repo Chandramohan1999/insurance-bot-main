@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: insurance-whatsapp-bot-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=StrongP@ssw0rd2024!
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql/data
+    user: root # Run as root to fix permission issues
+    restart: unless-stopped
+
+  adminer:
+    image: adminer
+    container_name: insurance-whatsapp-bot-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sqlserver
+
+volumes:
+  sqlserver-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/mssql-data # Local path with correct permissions
+
+# Pre-setup steps:
+# 1. Run: mkdir -p ./mssql-data
+# 2. Run: chmod 777 ./mssql-data
+# 3. Run: docker-compose up
