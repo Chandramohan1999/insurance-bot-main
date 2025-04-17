@@ -1,0 +1,245 @@
+{
+  "workflows": [
+    {
+      "id": "policyWorkflow",
+      "name": "Policy Information",
+      "questionIds": [
+        { "id": "policyPeriod", "entity": "policy", "action": "policy.update" },
+        {
+          "id": "ticketVesselNumber",
+          "entity": "policy",
+          "action": "policy.update"
+        },
+        { "id": "arrivalDate", "entity": "policy", "action": "policy.update" },
+        { "id": "flightNumber", "entity": "policy", "action": "policy.update" },
+        { "id": "airline", "entity": "policy", "action": "policy.update" },
+        { "id": "flightFrom", "entity": "policy", "action": "policy.update" },
+        {
+          "id": "hasOtherInsurance",
+          "entity": "policy",
+          "action": "policy.update"
+        }
+      ],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "auto",
+          "action": "createEntity",
+          "entityType": "member",
+          "data": {
+            "isPrimary": true,
+            "policyId": "{{policyId}}",
+            "addedAt": "{{currentTimestamp}}"
+          },
+          "nextWorkflow": "memberWorkflow"
+        }
+      ]
+    },
+    {
+      "id": "memberWorkflow",
+      "name": "Member Information",
+      "questionIds": [
+        { "id": "firstName", "entity": "member", "action": "member.update" },
+        { "id": "lastName", "entity": "member", "action": "member.update" },
+        { "id": "dateOfBirth", "entity": "member", "action": "member.update" },
+        { "id": "gender", "entity": "member", "action": "member.update" },
+        { "id": "houseNumber", "entity": "member", "action": "member.update" },
+        { "id": "streetNumber", "entity": "member", "action": "member.update" },
+        { "id": "city", "entity": "member", "action": "member.update" },
+        { "id": "state", "entity": "member", "action": "member.update" },
+        { "id": "zipCode", "entity": "member", "action": "member.update" },
+        { "id": "country", "entity": "member", "action": "member.update" },
+        { "id": "mobileNumber", "entity": "member", "action": "member.update" },
+        { "id": "email", "entity": "member", "action": "member.update" },
+        {
+          "id": "passportNumber",
+          "entity": "member",
+          "action": "member.update"
+        },
+        { "id": "placeOfIssue", "entity": "member", "action": "member.update" },
+        {
+          "id": "passportExpiry",
+          "entity": "member",
+          "action": "member.update"
+        },
+        {
+          "id": "issuingCountry",
+          "entity": "member",
+          "action": "member.update"
+        }
+      ],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "auto",
+          "nextWorkflow": "medicalQuestionsWorkflow"
+        }
+      ]
+    },
+    {
+      "id": "medicalQuestionsWorkflow",
+      "name": "Medical Information",
+      "questionIds": [
+        {
+          "id": "preExistingCondition",
+          "entity": "member",
+          "action": "member.update"
+        },
+        {
+          "id": "onMedicalTreatment",
+          "entity": "member",
+          "action": "member.update"
+        },
+        { "id": "isSmoker", "entity": "member", "action": "member.update" },
+        {
+          "id": "alcoholConsumption",
+          "entity": "member",
+          "action": "member.update"
+        },
+        { "id": "isPregnant", "entity": "member", "action": "member.update" },
+        {
+          "id": "hasSexuallyTransmittedDisease",
+          "entity": "member",
+          "action": "member.update"
+        },
+        {
+          "id": "hasMentalHealthIssues",
+          "entity": "member",
+          "action": "member.update"
+        },
+        {
+          "id": "wasHospitalized",
+          "entity": "member",
+          "action": "member.update"
+        },
+        {
+          "id": "travelingAgainstMedicalAdvice",
+          "entity": "member",
+          "action": "member.update"
+        }
+      ],
+      "skipRules": [
+        {
+          "questionId": "isPregnant",
+          "conditions": [
+            {
+              "type": "notEquals",
+              "field": "gender",
+              "value": "Female"
+            }
+          ]
+        }
+      ],
+      "transitions": [
+        {
+          "type": "askYesNo",
+          "question": "Add another member to the policy?",
+          "onYes": {
+            "action": "createEntity",
+            "entityType": "member",
+            "data": {
+              "isPrimary": false,
+              "policyId": "{{policyId}}",
+              "addedAt": "{{currentTimestamp}}"
+            },
+            "nextWorkflow": "memberWorkflow"
+          },
+          "onNo": {
+            "action": "completePolicy",
+            "nextWorkflow": "summaryWorkflow"
+          }
+        }
+      ]
+    },
+    {
+      "id": "summaryWorkflow",
+      "name": "Application Summary",
+      "questionIds": [
+        {
+          "id": "confirmApplication",
+          "entity": "policy",
+          "action": "policy.update"
+        }
+      ],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "conditional",
+          "condition": {
+            "field": "confirmApplication",
+            "equals": "Yes"
+          },
+          "onTrue": {
+            "action": "calculatePolicyPrice",
+            "nextWorkflow": "paymentWorkflow"
+          },
+          "onFalse": {
+            "action": "showMenu",
+            "nextWorkflow": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "paymentWorkflow",
+      "name": "Payment Processing",
+      "questionIds": [
+        {
+          "id": "paymentMethod",
+          "entity": "policy",
+          "action": "policy.update"
+        }
+      ],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "conditional",
+          "condition": {
+            "field": "paymentMethod",
+            "equals": "Promo Code"
+          },
+          "onTrue": {
+            "action": "askPromoCode",
+            "nextWorkflow": "promoCodeWorkflow"
+          },
+          "onFalse": {
+            "action": "payment.processPayment",
+            "nextWorkflow": "finalizeWorkflow"
+          }
+        }
+      ]
+    },
+    {
+      "id": "promoCodeWorkflow",
+      "name": "Promo Code Processing",
+      "questionIds": [
+        {
+          "id": "promoCode",
+          "entity": "policy",
+          "action": "policy.update"
+        }
+      ],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "auto",
+          "action": "applyPromoCode",
+          "nextWorkflow": "finalizeWorkflow"
+        }
+      ]
+    },
+    {
+      "id": "finalizeWorkflow",
+      "name": "Finalize Application",
+      "questionIds": [],
+      "skipRules": [],
+      "transitions": [
+        {
+          "type": "auto",
+          "action": "finalizeApplication",
+          "nextWorkflow": null
+        }
+      ]
+    }
+  ]
+}

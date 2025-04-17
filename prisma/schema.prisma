@@ -1,0 +1,111 @@
+// prisma/schema.prisma
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlserver"
+    url      = env("DATABASE_URL")
+}
+
+model Policy {
+    id                 String    @id @default(uuid())
+    createdAt          DateTime  @default(now())
+    updatedAt          DateTime  @updatedAt
+    isCompleted        Boolean   @default(false)
+    whatsappNumber     String    @unique // Make whatsappNumber unique instead
+    policyPeriod       String?
+    ticketVesselNumber String?
+    arrivalDate        String?
+    flightNumber       String?
+    airline            String?
+    flightFrom         String?
+    hasOtherInsurance  String?
+    confirmApplication String?
+    totalPrice         Float?
+    calculatedAt       DateTime?
+    memberCount        Int?      @default(0)
+    paymentMethod      String?
+    paymentStatus      String?
+    paymentId          String? // Remove @unique
+    paymentApprovalUrl String?
+    paymentCreatedAt   DateTime?
+    paymentCompletedAt DateTime?
+    payerID            String?
+    policyNumber       String? // Remove @unique
+    policyIssuedAt     DateTime?
+    promoCode          String?
+    discountRate       Float?
+
+    members Member[]
+    payment Payment?
+}
+
+model Member {
+    id                            String   @id @default(uuid())
+    isPrimary                     Boolean  @default(false)
+    addedAt                       DateTime @default(now())
+    firstName                     String
+    lastName                      String
+    dateOfBirth                   String
+    gender                        String
+    houseNumber                   String?
+    streetNumber                  String?
+    city                          String?
+    state                         String?
+    zipCode                       String?
+    country                       String?
+    mobileNumber                  String?
+    phoneNumber                   String?
+    email                         String?
+    passportNumber                String?
+    placeOfIssue                  String?
+    passportExpiry                String?
+    issuingCountry                String?
+    preExistingCondition          String?
+    onMedicalTreatment            String?
+    isSmoker                      String?
+    alcoholConsumption            String?
+    isPregnant                    String?
+    hasSexuallyTransmittedDisease String?
+    hasMentalHealthIssues         String?
+    wasHospitalized               String?
+    travelingAgainstMedicalAdvice String?
+
+    policyId String
+    policy   Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+    id                  String    @id
+    userId              String
+    amount              Float
+    currency            String    @default("USD")
+    status              String
+    paymentMethod       String
+    description         String?
+    createdAt           DateTime  @default(now())
+    approvalUrl         String?
+    gatewayPaymentId    String?
+    gatewayResponseText String? // Changed from Json to String
+    returnUrl           String?
+    cancelUrl           String?
+    completedAt         DateTime?
+
+    policyId String @unique
+    policy   Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+}
+
+model WorkflowState {
+    id                   String   @id @default(uuid())
+    phoneNumber          String   @unique
+    workflowId           String?
+    currentQuestionIndex Int      @default(0)
+    lastMessageTimestamp DateTime @default(now())
+    answersJson          String? // Changed from Json to String
+    workflowHistoryJson  String? // Changed from Json to String
+    isWaitingForResponse Boolean  @default(false)
+    pendingTransition    String?
+    policyId             String?
+    memberId             String?
+}

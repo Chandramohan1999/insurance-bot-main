@@ -1,0 +1,200 @@
+{
+  "questions": [
+    {
+      "id": "firstName",
+      "text": "What is your first name?",
+      "validationType": "name"
+    },
+    {
+      "id": "lastName",
+      "text": "What is your last name?",
+      "validationType": "name"
+    },
+    {
+      "id": "dateOfBirth",
+      "text": "What is your date of birth? (YYYY-MM-DD)",
+      "validationType": "date"
+    },
+    {
+      "id": "gender",
+      "text": "What is your gender?",
+      "options": ["Male", "Female", "Other", "Prefer not to say"],
+      "validationType": "option"
+    },
+    {
+      "id": "houseNumber",
+      "text": "What is your house number?",
+      "validationType": "required"
+    },
+    {
+      "id": "streetNumber",
+      "text": "What is your street name?",
+      "validationType": "required"
+    },
+    {
+      "id": "city",
+      "text": "What city do you live in?",
+      "validationType": "required"
+    },
+    {
+      "id": "state",
+      "text": "What state/province do you live in?",
+      "validationType": "required"
+    },
+    {
+      "id": "zipCode",
+      "text": "What is your postal/zip code?",
+      "validationType": "required"
+    },
+    {
+      "id": "country",
+      "text": "What country do you live in?",
+      "validationType": "required"
+    },
+    {
+      "id": "mobileNumber",
+      "text": "What is your mobile number?",
+      "validationType": "phone"
+    },
+    {
+      "id": "email",
+      "text": "What is your email address?",
+      "validationType": "email"
+    },
+    {
+      "id": "passportNumber",
+      "text": "What is your passport number?",
+      "validationType": "passport"
+    },
+    {
+      "id": "placeOfIssue",
+      "text": "Where was your passport issued?",
+      "validationType": "required"
+    },
+    {
+      "id": "passportExpiry",
+      "text": "What is your passport expiry date? (YYYY-MM-DD)",
+      "validationType": "date"
+    },
+    {
+      "id": "issuingCountry",
+      "text": "What country issued your passport?",
+      "validationType": "required"
+    },
+    {
+      "id": "preExistingCondition",
+      "text": "Do you have any pre-existing medical conditions?",
+      "options": [
+        "None",
+        "Diabetes",
+        "Hypertension",
+        "Heart Disease",
+        "Asthma",
+        "Other"
+      ],
+      "validationType": "option"
+    },
+    {
+      "id": "onMedicalTreatment",
+      "text": "Are you currently on any medical treatment?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "isSmoker",
+      "text": "Do you smoke?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "alcoholConsumption",
+      "text": "How would you describe your alcohol consumption?",
+      "options": ["None", "Occasional", "Regular", "Heavy"],
+      "validationType": "option"
+    },
+    {
+      "id": "isPregnant",
+      "text": "Are you currently pregnant?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "hasSexuallyTransmittedDisease",
+      "text": "Do you have any sexually transmitted disease?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "hasMentalHealthIssues",
+      "text": "Do you have any mental health issues?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "wasHospitalized",
+      "text": "Have you been hospitalized in the last 12 months?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "travelingAgainstMedicalAdvice",
+      "text": "Are you traveling against medical advice?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "policyPeriod",
+      "text": "How long do you need coverage for?",
+      "options": ["15 days", "30 days"],
+      "validationType": "option"
+    },
+    {
+      "id": "ticketVesselNumber",
+      "text": "What is your ticket/vessel number?",
+      "validationType": "required"
+    },
+    {
+      "id": "arrivalDate",
+      "text": "What is your arrival date? (YYYY-MM-DD)",
+      "validationType": "date"
+    },
+    {
+      "id": "flightNumber",
+      "text": "What is your flight number?",
+      "validationType": "required"
+    },
+    {
+      "id": "airline",
+      "text": "Which airline are you flying with?",
+      "validationType": "required"
+    },
+    {
+      "id": "flightFrom",
+      "text": "Where are you flying from?",
+      "validationType": "required"
+    },
+    {
+      "id": "hasOtherInsurance",
+      "text": "Do you have any other insurance policies?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "confirmApplication",
+      "text": "Is all the information correct?",
+      "options": ["Yes", "No"],
+      "validationType": "option"
+    },
+    {
+      "id": "paymentMethod",
+      "text": "Please select a payment method:",
+      "options": ["PayPal", "Promo Code"],
+      "validationType": "option"
+    },
+    {
+      "id": "promoCode",
+      "text": "Please enter your promo code:",
+      "validationType": "required"
+    }
+  ]
+}
