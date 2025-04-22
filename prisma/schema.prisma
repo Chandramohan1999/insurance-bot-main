@@ -71,6 +71,7 @@ model Member {
     hasMentalHealthIssues         String?
     wasHospitalized               String?
     travelingAgainstMedicalAdvice String?
+    policyNumber                  String?
 
     policyId String
     policy   Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
@@ -108,4 +109,18 @@ model WorkflowState {
     pendingTransition    String?
     policyId             String?
     memberId             String?
+}
+
+model PromoCode {
+    id              String    @id @default(uuid())
+    code            String    @unique
+    discountPercent Float // Discount percentage (e.g., 25 for 25% discount)
+    isActive        Boolean   @default(true)
+    startDate       DateTime? // Optional: when the promo code becomes valid
+    endDate         DateTime? // Optional: when the promo code expires
+    usageLimit      Int? // Optional: maximum number of times this code can be used
+    usageCount      Int       @default(0) // Number of times this code has been used
+    description     String? // Optional: description of the promo code
+    createdAt       DateTime  @default(now())
+    updatedAt       DateTime  @updatedAt
 }

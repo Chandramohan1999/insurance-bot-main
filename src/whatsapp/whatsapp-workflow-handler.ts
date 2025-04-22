@@ -1845,6 +1845,7 @@ export class WhatsAppWorkflowHandler {
     // Log other events
     logger.info(`Received webhook event of type ${event.eventType}`);
   }
+
   public async handlePaymentCompletion(
     phoneNumber: string,
     policyId: string
@@ -1861,160 +1862,204 @@ export class WhatsAppWorkflowHandler {
         return;
       }
 
-      // Get the primary member
-      const primaryMember =
-        policy.members.find((m) => m.isPrimary) || policy.members[0];
-
-      if (!primaryMember) {
+      // Check if there are any members
+      if (!policy.members || policy.members.length === 0) {
         logger.error(`No members found for policy: ${policyId}`);
         return;
       }
 
-      // Format data for output and API calls
-      const outputData = {
-        memberDetails: {
-          firstName: primaryMember.firstName,
-          lastName: primaryMember.lastName,
-          dateOfBirth: primaryMember.dateOfBirth,
-          gender: primaryMember.gender,
-          houseNumber: primaryMember.houseNumber,
-          streetNumber: primaryMember.streetNumber,
-          city: primaryMember.city,
-          state: primaryMember.state,
-          zipCode: primaryMember.zipCode,
-          country: primaryMember.country,
-          mobileNumber: primaryMember.mobileNumber,
-          email: primaryMember.email,
-          passportNumber: primaryMember.passportNumber,
-          placeOfIssue: primaryMember.placeOfIssue,
-          passportExpiry: primaryMember.passportExpiry,
-          issuingCountry: primaryMember.issuingCountry,
-          phoneNumber: primaryMember.phoneNumber || primaryMember.mobileNumber,
-          preExistingCondition: primaryMember.preExistingCondition,
-          onMedicalTreatment: primaryMember.onMedicalTreatment === "Yes",
-          isSmoker: primaryMember.isSmoker === "Yes",
-          alcoholConsumption: primaryMember.alcoholConsumption,
-          isPregnant: primaryMember.isPregnant === "Yes",
-          hasSexuallyTransmittedDisease:
-            primaryMember.hasSexuallyTransmittedDisease === "Yes",
-          hasOtherInsurance: policy.hasOtherInsurance === "Yes",
-          travelingAgainstMedicalAdvice:
-            primaryMember.travelingAgainstMedicalAdvice === "Yes",
-          hasMentalHealthIssues: primaryMember.hasMentalHealthIssues === "Yes",
-          wasHospitalized: primaryMember.wasHospitalized === "Yes",
-        },
-        policyDetails: {
-          productType: "Travel Insurance",
-          policyPeriod: policy.policyPeriod,
-          ticketVesselNumber: policy.ticketVesselNumber,
-          arrivalDate: policy.arrivalDate,
-          flightNumber: policy.flightNumber,
-          airline: policy.airline,
-          flightFrom: policy.flightFrom,
-          paymentMethod: policy.paymentMethod,
-          promoCode: policy.promoCode,
-          sessionId: `session_${Math.random().toString(36).slice(2)}`,
-          isCompleted: true,
-          crtd_Dt: policy.createdAt?.toISOString(),
-          lst_Updt_Dt: policy.updatedAt?.toISOString(),
-        },
-      };
-
-      // Log the data in the required format
-      console.log("🔵 PAYMENT CONFIRMED - POLICY DATA 🔵");
-      console.log(JSON.stringify(outputData, null, 2));
-      logger.info(`Payment confirmed for policy ${policyId}. Data logged.`);
-
       // Import policy API service
       const { policyApiService } = require("../services/policy-api-service");
 
-      // Call the policy issuance API
-      try {
-        const policyNumber = await policyApiService.issuePolicyFromPaymentData(
-          outputData
-        );
+      // Array to store all successful policy numbers
+      const successfulPolicies: Array<{ member: any; policyNumber: string }> =
+        [];
+      const failedPolicies: Array<{ member: any; error: string }> = [];
 
-        if (policyNumber) {
+      // Process each member separately
+      for (const member of policy.members) {
+        try {
+          // Format data for this specific member
+          const memberOutputData = {
+            memberDetails: {
+              firstName: member.firstName,
+              lastName: member.lastName,
+              dateOfBirth: member.dateOfBirth,
+              gender: member.gender,
+              houseNumber: member.houseNumber,
+              streetNumber: member.streetNumber,
+              city: member.city,
+              state: member.state,
+              zipCode: member.zipCode,
+              country: member.country,
+              mobileNumber: member.mobileNumber,
+              email: member.email,
+              passportNumber: member.passportNumber,
+              placeOfIssue: member.placeOfIssue,
+              passportExpiry: member.passportExpiry,
+              issuingCountry: member.issuingCountry,
+              phoneNumber: member.phoneNumber || member.mobileNumber,
+              preExistingCondition: member.preExistingCondition,
+              onMedicalTreatment: member.onMedicalTreatment === "Yes",
+              isSmoker: member.isSmoker === "Yes",
+              alcoholConsumption: member.alcoholConsumption,
+              isPregnant: member.isPregnant === "Yes",
+              hasSexuallyTransmittedDisease:
+                member.hasSexuallyTransmittedDisease === "Yes",
+              hasOtherInsurance: policy.hasOtherInsurance === "Yes",
+              travelingAgainstMedicalAdvice:
+                member.travelingAgainstMedicalAdvice === "Yes",
+              hasMentalHealthIssues: member.hasMentalHealthIssues === "Yes",
+              wasHospitalized: member.wasHospitalized === "Yes",
+            },
+            policyDetails: {
+              productType: "Travel Insurance",
+              policyPeriod: policy.policyPeriod,
+              ticketVesselNumber: policy.ticketVesselNumber,
+              arrivalDate: policy.arrivalDate,
+              flightNumber: policy.flightNumber,
+              airline: policy.airline,
+              flightFrom: policy.flightFrom,
+              paymentMethod: policy.paymentMethod,
+              promoCode: policy.promoCode,
+              sessionId: `session_${Math.random().toString(36).slice(2)}`,
+              isCompleted: true,
+              crtd_Dt: policy.createdAt?.toISOString(),
+              lst_Updt_Dt: policy.updatedAt?.toISOString(),
+            },
+          };
+
+          // Log the data for this member
+          console.log(
+            `🔵 PAYMENT CONFIRMED - INDIVIDUAL POLICY DATA for ${member.firstName} ${member.lastName} 🔵`
+          );
+          console.log(JSON.stringify(memberOutputData, null, 2));
           logger.info(
-            `Successfully issued policy number: ${policyNumber} for policy ${policyId}`
+            `Processing policy for member ${member.id}, name: ${member.firstName} ${member.lastName}`
           );
 
-          // Update our database with the policy number
-          await prisma.policy.update({
-            where: { id: policyId },
-            data: {
-              policyNumber: policyNumber,
-              policyIssuedAt: new Date(),
-            },
-          });
+          // Call the policy issuance API for this member
+          const policyNumber =
+            await policyApiService.issuePolicyFromPaymentData(memberOutputData);
 
-          // Now generate and send the policy letter
-          const email = primaryMember.email;
-          const name =
-            `${primaryMember.firstName} ${primaryMember.lastName}`.trim();
-
-          if (email) {
-            const letterSent = await policyApiService.generatePolicyLetter(
-              policyNumber,
-              email,
-              name
+          if (policyNumber) {
+            logger.info(
+              `Successfully issued policy number: ${policyNumber} for member ${member.id} (${member.firstName} ${member.lastName})`
             );
 
-            if (letterSent) {
-              logger.info(
-                `Policy letter sent successfully to ${email} for policy ${policyNumber}`
+            // Store the member's individual policy number in the member record
+            await prisma.member.update({
+              where: { id: member.id },
+              data: {
+                policyNumber: policyNumber, // Assuming you add a policyNumber field to the Member model
+              },
+            });
+
+            // Generate and send the policy letter for this member
+            const email = member.email;
+            const name = `${member.firstName} ${member.lastName}`.trim();
+
+            if (email) {
+              const letterSent = await policyApiService.generatePolicyLetter(
+                policyNumber,
+                email,
+                name
               );
 
-              // Send a WhatsApp message about the policy being issued
-              await this.watiService.sendTextMessage(
-                phoneNumber,
-                `🎉 Congratulations! Your insurance policy has been issued.\n\nPolicy Number: ${policyNumber}\n\nA copy of your policy has been sent to your email address: ${email}\n\nThank you for choosing our insurance services!`
-              );
+              if (letterSent) {
+                logger.info(
+                  `Policy letter sent successfully to ${email} for policy ${policyNumber}`
+                );
+                successfulPolicies.push({ member, policyNumber });
+              } else {
+                logger.error(
+                  `Failed to send policy letter for policy ${policyNumber}`
+                );
+                // Still add to successful policies even if email failed
+                successfulPolicies.push({ member, policyNumber });
+              }
             } else {
-              logger.error(
-                `Failed to send policy letter for policy ${policyNumber}`
+              logger.warn(
+                `Cannot send policy letter - no email found for member ${member.id}`
               );
-
-              // Send a notification about the policy but mention email issue
-              await this.watiService.sendTextMessage(
-                phoneNumber,
-                `Your insurance policy has been issued with policy number: ${policyNumber}.\n\nHowever, we couldn't send the policy document to your email. Please contact customer support for assistance.`
-              );
+              // Still add to successful policies even without email
+              successfulPolicies.push({ member, policyNumber });
             }
           } else {
-            logger.warn(
-              `Cannot send policy letter - no email found for policy ${policyId}`
+            logger.error(
+              `Failed to issue policy for member ${member.id} (${member.firstName} ${member.lastName})`
             );
-
-            // Send a notification about the policy without email
-            await this.watiService.sendTextMessage(
-              phoneNumber,
-              `Your insurance policy has been issued with policy number: ${policyNumber}.\n\nSince we don't have your email address, please contact customer support to receive your policy document.`
-            );
+            failedPolicies.push({ member, error: "Policy issuance failed" });
           }
-        } else {
-          logger.error(`Failed to issue policy for ${policyId}`);
-
-          // Send an error message to the customer
-          await this.watiService.sendTextMessage(
-            phoneNumber,
-            "We've received your payment and your application is being processed. However, there was a delay in generating your policy number. Our team has been notified and will assist you shortly."
+        } catch (memberError: any) {
+          logger.error(
+            `Error processing policy for member ${member.id}:`,
+            memberError
           );
+          failedPolicies.push({
+            member,
+            error: memberError.message || "Unknown error",
+          });
         }
-      } catch (apiError) {
-        logger.error(`Error calling policy APIs:`, apiError);
+      }
 
-        // Send a message about the processing delay
+      // Update the main policy with issuance information
+      if (successfulPolicies.length > 0) {
+        await prisma.policy.update({
+          where: { id: policyId },
+          data: {
+            policyIssuedAt: new Date(),
+            policyNumber: `GROUP-${successfulPolicies
+              .map((p) => p.policyNumber)
+              .join(";")}`, // Store all policy numbers
+          },
+        });
+      }
+
+      // Send summary message to the customer
+      if (successfulPolicies.length > 0) {
+        let summaryMessage = `🎉 Your insurance policies have been successfully issued!\n\n`;
+
+        for (const success of successfulPolicies) {
+          summaryMessage += `✅ ${success.member.firstName} ${success.member.lastName}: Policy #${success.policyNumber}\n`;
+          if (success.member.email) {
+            summaryMessage += `   Policy document sent to: ${success.member.email}\n\n`;
+          } else {
+            summaryMessage += `   No email provided - please contact support for policy document\n\n`;
+          }
+        }
+
+        if (failedPolicies.length > 0) {
+          summaryMessage += `\n⚠️ Some policies could not be issued:\n`;
+          for (const failure of failedPolicies) {
+            summaryMessage += `❌ ${failure.member.firstName} ${failure.member.lastName}: ${failure.error}\n`;
+          }
+          summaryMessage += `\nPlease contact customer support for assistance with the failed policies.`;
+        }
+
+        summaryMessage += `\nThank you for choosing our insurance services!`;
+
+        await this.watiService.sendTextMessage(phoneNumber, summaryMessage);
+      } else {
+        // All policies failed
         await this.watiService.sendTextMessage(
           phoneNumber,
-          "Thank you for your payment! Your insurance application is being processed. You'll receive your policy details shortly."
+          "We've received your payment but encountered issues while generating the policies for all members. Our team has been notified and will assist you shortly."
         );
       }
     } catch (error) {
       logger.error(`Error handling payment completion: ${error}`);
+
+      // Send an error message to the customer
+      await this.watiService.sendTextMessage(
+        phoneNumber,
+        "Thank you for your payment! Your insurance applications are being processed. You'll receive policy details shortly."
+      );
     }
   }
-  // Add this function to handle promo code application
+
+  // Modified applyPromoCode method in src/whatsapp/whatsapp-workflow-handler.ts
+
   private async applyPromoCode(
     phoneNumber: string,
     policyId: string
@@ -2027,25 +2072,55 @@ export class WhatsAppWorkflowHandler {
 
       if (!policy || !policy.promoCode) return;
 
-      // Apply discount based on promo code
-      let discountRate = 0;
+      // Validate promo code against database
+      const promoCode = await prisma.promoCode.findUnique({
+        where: { code: policy.promoCode.toUpperCase() },
+      });
 
-      // Simple promo code logic - can be expanded
-      if (policy.promoCode === "TRAVEL25") {
-        discountRate = 0.25; // 25% discount
-      } else if (policy.promoCode === "TRAVEL10") {
-        discountRate = 0.1; // 10% discount
-      } else if (policy.promoCode === "WELCOME") {
-        discountRate = 0.15; // 15% discount
+      let discountRate = 0;
+      let isValidPromo = false;
+
+      if (promoCode) {
+        // Check if promo code is active
+        if (promoCode.isActive) {
+          const now = new Date();
+
+          // Check date validity
+          const isDateValid =
+            (!promoCode.startDate || now >= promoCode.startDate) &&
+            (!promoCode.endDate || now <= promoCode.endDate);
+
+          // Check usage limit
+          const hasUsageLeft =
+            !promoCode.usageLimit ||
+            promoCode.usageCount < promoCode.usageLimit;
+
+          if (isDateValid && hasUsageLeft) {
+            discountRate = promoCode.discountPercent / 100; // Convert percentage to decimal
+            isValidPromo = true;
+
+            // Increment usage count
+            await prisma.promoCode.update({
+              where: { id: promoCode.id },
+              data: {
+                usageCount: { increment: 1 },
+              },
+            });
+
+            logger.info(
+              `Applied promo code ${promoCode.code} to policy ${policyId}`
+            );
+          }
+        }
       }
 
-      // Update policy with discount
+      // Update policy with discount or error
       await prisma.policy.update({
         where: { id: policyId },
         data: {
-          discountRate,
-          paymentStatus: "APPROVED", // Auto-approve with promo code
-          paymentCompletedAt: new Date(),
+          discountRate: isValidPromo ? discountRate : 0,
+          paymentStatus: isValidPromo ? "APPROVED" : "PROMO_INVALID",
+          paymentCompletedAt: isValidPromo ? new Date() : null,
         },
       });
 
@@ -2053,26 +2128,60 @@ export class WhatsAppWorkflowHandler {
       const price = await this.paypalService.calculatePolicyPrice(policyId);
 
       // Send message about discount
-      if (discountRate > 0) {
+      if (isValidPromo) {
         await this.watiService.sendTextMessage(
           phoneNumber,
-          `Your promo code has been applied! You've received a ${
+          `Your promo code has been applied! You've received a ${Math.round(
             discountRate * 100
-          }% discount. Your total is now $${price.toFixed(2)}.`
+          )}% discount. Your total is now $${price.toFixed(2)}.`
         );
+
+        // If promo code is valid, complete the policy issuance
+        await this.handlePaymentCompletion(phoneNumber, policyId);
       } else {
+        let errorMessage = "The promo code you entered is invalid or expired.";
+
+        if (promoCode) {
+          if (!promoCode.isActive) {
+            errorMessage = "This promo code has been deactivated.";
+          } else if (promoCode.startDate && new Date() < promoCode.startDate) {
+            errorMessage = "This promo code is not yet valid.";
+          } else if (promoCode.endDate && new Date() > promoCode.endDate) {
+            errorMessage = "This promo code has expired.";
+          } else if (
+            promoCode.usageLimit &&
+            promoCode.usageCount >= promoCode.usageLimit
+          ) {
+            errorMessage = "This promo code has reached its usage limit.";
+          }
+        }
+
         await this.watiService.sendTextMessage(
           phoneNumber,
-          `The promo code you entered is invalid or expired. No discount has been applied. Your total remains $${price.toFixed(
+          `${errorMessage} No discount has been applied. Your total remains $${price.toFixed(
             2
           )}.`
         );
-      }
 
-      // Log policy data (same as payment completion)
-      await this.handlePaymentCompletion(phoneNumber, policyId);
+        // Ask if they want to try another promo code or proceed with payment
+        await this.watiService.sendInteractiveButtonsMessage(phoneNumber, {
+          body: "Would you like to try another promo code or proceed with PayPal payment?",
+          buttons: [{ text: "Try Another Code" }, { text: "Pay with PayPal" }],
+        });
+
+        // Set pending transition to handle the user's choice
+        const userState = this.userStates.get(phoneNumber);
+        if (userState) {
+          userState.pendingTransition = "promoCodeRetry";
+          await this.saveWorkflowState(userState);
+        }
+      }
     } catch (error) {
       logger.error(`Error applying promo code: ${error}`);
+      await this.watiService.sendTextMessage(
+        phoneNumber,
+        "Sorry, there was an error applying your promo code. Please contact customer support for assistance."
+      );
     }
   }
 }

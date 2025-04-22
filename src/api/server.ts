@@ -1,7 +1,10 @@
+// Update the src/api/server.ts file to include promo code routes
+
 import express from "express";
 import { logger } from "../core/logger";
 import { whatsappRouter } from "./whatsapp-routes";
 import { paymentRouter } from "./payment-routes";
+import { promoCodeRouter } from "./promo-code-routes"; // Add this import
 import env from "../config/env";
 
 export function startServer(port: number = env.port): void {
@@ -19,6 +22,7 @@ export function startServer(port: number = env.port): void {
   // Mount API routes
   app.use("/api/webhook", whatsappRouter);
   app.use("/api/payment", paymentRouter);
+  app.use("/api/promo-codes", promoCodeRouter); // Add this line
 
   // Phone number endpoint for starting conversations
   app.post("/api/phone", async (req, res) => {
