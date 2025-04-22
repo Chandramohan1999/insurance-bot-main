@@ -596,45 +596,14 @@ export class WhatsAppWorkflowHandler {
 
       if (policy && policy.isCompleted) {
         logger.info(
-          `Policy ${userState.policyId} is already completed, starting new workflow`
+          `Policy ${userState.policyId} is already completed. Ignoring further messages.`
         );
 
-        // Send message to the user
+        // If the policy is completed, simply return or send a message that the policy is already completed
         await this.watiService.sendTextMessage(
           phoneNumber,
-          "Your previous policy application is already completed. Would you like to start a new application?"
+          "Your insurance policy has already been completed. If you need assistance with your policy, please contact customer support."
         );
-
-        // Send yes/no buttons
-        await this.watiService.sendInteractiveButtonsMessage(phoneNumber, {
-          body: "Start a new policy application?",
-          buttons: [{ text: "Yes" }, { text: "No" }],
-        });
-
-        // Set pending transition for new policy
-        userState.pendingTransition = "startNewPolicy";
-        await this.saveWorkflowState(userState);
-        return;
-      }
-    }
-
-    // Check if we're handling a request to start a new policy
-    if (userState.pendingTransition === "startNewPolicy") {
-      const normalizedResponse = message.toLowerCase().trim();
-      if (normalizedResponse === "yes" || normalizedResponse === "y") {
-        logger.info(`User ${phoneNumber} chose to start a new policy`);
-        await this.startWorkflow(phoneNumber);
-        return;
-      } else {
-        // User doesn't want a new policy
-        await this.watiService.sendTextMessage(
-          phoneNumber,
-          "No problem. If you need any assistance with your existing policy, please contact customer support."
-        );
-
-        // Clear the pending transition
-        userState.pendingTransition = null;
-        await this.saveWorkflowState(userState);
         return;
       }
     }
@@ -1845,7 +1814,6 @@ export class WhatsAppWorkflowHandler {
     // Log other events
     logger.info(`Received webhook event of type ${event.eventType}`);
   }
-
   public async handlePaymentCompletion(
     phoneNumber: string,
     policyId: string
@@ -2016,30 +1984,46 @@ export class WhatsAppWorkflowHandler {
         });
       }
 
-      // Send summary message to the customer
+      // Send FINAL summary message to the customer - NO PROMPT FOR NEW POLICY
       if (successfulPolicies.length > 0) {
-        let summaryMessage = `🎉 Your insurance policies have been successfully issued!\n\n`;
+        let finalMessage = `🎉 **Your Insurance Policies Have Been Successfully Purchased!** 🎉\n\n`;
+
+        finalMessage += `**Policy Details:**\n`;
+        finalMessage += `- Policy Type: Travel Insurance\n`;
+        finalMessage += `- Policy Period: ${policy.policyPeriod}\n`;
+        finalMessage += `- Total Amount: $${
+          policy.totalPrice?.toFixed(2) || "0.00"
+        }\n\n`;
+
+        finalMessage += `**Policies Issued:**\n`;
 
         for (const success of successfulPolicies) {
-          summaryMessage += `✅ ${success.member.firstName} ${success.member.lastName}: Policy #${success.policyNumber}\n`;
+          finalMessage += `✅ ${success.member.firstName} ${success.member.lastName}\n`;
+          finalMessage += `   Policy Number: ${success.policyNumber}\n`;
           if (success.member.email) {
-            summaryMessage += `   Policy document sent to: ${success.member.email}\n\n`;
+            finalMessage += `   Policy document sent to: ${success.member.email}\n\n`;
           } else {
-            summaryMessage += `   No email provided - please contact support for policy document\n\n`;
+            finalMessage += `   No email provided - please contact support for policy document\n\n`;
           }
         }
 
         if (failedPolicies.length > 0) {
-          summaryMessage += `\n⚠️ Some policies could not be issued:\n`;
+          finalMessage += `\n⚠️ Some policies could not be issued:\n`;
           for (const failure of failedPolicies) {
-            summaryMessage += `❌ ${failure.member.firstName} ${failure.member.lastName}: ${failure.error}\n`;
+            finalMessage += `❌ ${failure.member.firstName} ${failure.member.lastName}: ${failure.error}\n`;
           }
-          summaryMessage += `\nPlease contact customer support for assistance with the failed policies.`;
+          finalMessage += `\nPlease contact customer support for assistance with the failed policies.\n`;
         }
 
-        summaryMessage += `\nThank you for choosing our insurance services!`;
+        finalMessage += `\n**Travel Details:**\n`;
+        finalMessage += `- Flight Number: ${policy.flightNumber}\n`;
+        finalMessage += `- Airline: ${policy.airline}\n`;
+        finalMessage += `- Arrival Date: ${policy.arrivalDate}\n\n`;
 
-        await this.watiService.sendTextMessage(phoneNumber, summaryMessage);
+        finalMessage += `Thank you for choosing our insurance services! Keep your policy numbers safe for future reference.\n\n`;
+        finalMessage += `For any assistance, contact our customer support team.`;
+
+        await this.watiService.sendTextMessage(phoneNumber, finalMessage);
       } else {
         // All policies failed
         await this.watiService.sendTextMessage(
