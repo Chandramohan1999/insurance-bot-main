@@ -49,12 +49,7 @@ model Member {
     lastName                      String
     dateOfBirth                   String
     gender                        String
-    houseNumber                   String?
-    streetNumber                  String?
-    city                          String?
-    state                         String?
-    zipCode                       String?
-    country                       String?
+    address                       String? // Single address field replacing all individual fields
     mobileNumber                  String?
     phoneNumber                   String?
     email                         String?

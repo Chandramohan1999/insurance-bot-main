@@ -43,12 +43,7 @@
         { "id": "lastName", "entity": "member", "action": "member.update" },
         { "id": "dateOfBirth", "entity": "member", "action": "member.update" },
         { "id": "gender", "entity": "member", "action": "member.update" },
-        { "id": "houseNumber", "entity": "member", "action": "member.update" },
-        { "id": "streetNumber", "entity": "member", "action": "member.update" },
-        { "id": "city", "entity": "member", "action": "member.update" },
-        { "id": "state", "entity": "member", "action": "member.update" },
-        { "id": "zipCode", "entity": "member", "action": "member.update" },
-        { "id": "country", "entity": "member", "action": "member.update" },
+        { "id": "address", "entity": "member", "action": "member.update" },
         { "id": "mobileNumber", "entity": "member", "action": "member.update" },
         { "id": "email", "entity": "member", "action": "member.update" },
         {

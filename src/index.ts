@@ -15,7 +15,7 @@ import { getWhatsAppIntegration } from "./whatsapp/whatsapp-integration";
     logger.info("WhatsApp integration initialized");
 
     // Start the server
-    const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+    const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
     startServer(PORT);
     logger.info(`Server started on port ${PORT}`);
   } catch (error) {

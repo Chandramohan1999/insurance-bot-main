@@ -118,18 +118,66 @@ export class PolicyApiService {
     const memberDetails = data.memberDetails || {};
     const policyDetails = data.policyDetails || {};
 
+    // Parse address if it exists (you might want to implement smarter parsing)
+    let addressComponents = {
+      houseNumber: "",
+      streetNumber: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
+    };
+
+    if (memberDetails.address) {
+      // Simple parsing - you might want to make this more sophisticated
+      const addressParts = memberDetails.address
+        .split(",")
+        .map((part: string) => part.trim());
+
+      if (addressParts.length >= 6) {
+        addressComponents = {
+          houseNumber: addressParts[0] || "",
+          streetNumber: addressParts[1] || "",
+          city: addressParts[2] || "",
+          state: addressParts[3] || "",
+          zipCode: addressParts[4] || "",
+          country: addressParts[5] || "",
+        };
+      } else if (addressParts.length >= 4) {
+        // Fallback for shorter addresses
+        addressComponents = {
+          houseNumber: "",
+          streetNumber: addressParts[0] || "",
+          city: addressParts[1] || "",
+          state: addressParts[2] || "",
+          zipCode: "",
+          country: addressParts[3] || "",
+        };
+      } else {
+        // Use the full address as street if parsing fails
+        addressComponents = {
+          houseNumber: "",
+          streetNumber: memberDetails.address,
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "",
+        };
+      }
+    }
+
     // Format the data according to the API's expected schema
     return {
       firstName: memberDetails.firstName,
       lastName: memberDetails.lastName,
       dateOfBirth: memberDetails.dateOfBirth,
       gender: memberDetails.gender,
-      houseNumber: memberDetails.houseNumber,
-      streetNumber: memberDetails.streetNumber,
-      city: memberDetails.city,
-      state: memberDetails.state,
-      zipCode: memberDetails.zipCode,
-      country: memberDetails.country,
+      houseNumber: addressComponents.houseNumber,
+      streetNumber: addressComponents.streetNumber,
+      city: addressComponents.city,
+      state: addressComponents.state,
+      zipCode: addressComponents.zipCode,
+      country: addressComponents.country,
       mobileNumber: memberDetails.mobileNumber,
       email: memberDetails.email,
       passportNumber: memberDetails.passportNumber,

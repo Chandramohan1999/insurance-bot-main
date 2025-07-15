@@ -1742,6 +1742,9 @@ export class WhatsAppWorkflowHandler {
   }
 
   async handleWebhookEvent(event: any): Promise<void> {
+    console.log("====================================");
+    console.log(event);
+    console.log("====================================");
     // Determine if this is an incoming regular text message
     if (
       event.eventType === "message" &&

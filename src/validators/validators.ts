@@ -125,13 +125,72 @@ validatorRegistry.register(
 );
 
 validatorRegistry.register("passport", (value: string): ValidationResult => {
-  const re = /^[A-Z0-9]{6,12}$/;
-  if (!re.test(value)) {
+  // Trim whitespace
+  const trimmedValue = value.trim();
+
+  // Check if empty
+  if (!trimmedValue) {
+    return {
+      isValid: false,
+      message: "Passport number is required.",
+    };
+  }
+
+  // Check minimum length
+  if (trimmedValue.length < 4) {
+    return {
+      isValid: false,
+      message: "Passport number must be at least 4 characters long.",
+    };
+  }
+
+  // Check maximum length
+  if (trimmedValue.length > 20) {
+    return {
+      isValid: false,
+      message: "Passport number cannot exceed 20 characters.",
+    };
+  }
+
+  // Allow letters, numbers, spaces, and common separators (but not special symbols)
+  const re = /^[A-Za-z0-9\s\-]+$/;
+  if (!re.test(trimmedValue)) {
     return {
       isValid: false,
       message:
-        "Please enter a valid passport number (6-12 alphanumeric characters)",
+        "Passport number can only contain letters, numbers, spaces, and hyphens.",
     };
   }
+
+  // Ensure it's not just spaces or hyphens
+  if (!/[A-Za-z0-9]/.test(trimmedValue)) {
+    return {
+      isValid: false,
+      message: "Passport number must contain at least one letter or number.",
+    };
+  }
+
+  return { isValid: true };
+});
+
+validatorRegistry.register("address", (value: string): ValidationResult => {
+  if (!value || value.trim().length < 10) {
+    return {
+      isValid: false,
+      message:
+        "Please enter a complete address with at least 10 characters (house number, street, city, state, postal code, country)",
+    };
+  }
+
+  // Check for minimum components (should have at least 3 commas or similar separators)
+  const components = value.split(/[,\n]/);
+  if (components.length < 3) {
+    return {
+      isValid: false,
+      message:
+        "Please provide a complete address including house number, street, city, state, postal code, and country. You can separate components with commas.",
+    };
+  }
+
   return { isValid: true };
 });

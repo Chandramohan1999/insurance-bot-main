@@ -22,34 +22,9 @@
       "validationType": "option"
     },
     {
-      "id": "houseNumber",
-      "text": "What is your house number?",
-      "validationType": "required"
-    },
-    {
-      "id": "streetNumber",
-      "text": "What is your street name?",
-      "validationType": "required"
-    },
-    {
-      "id": "city",
-      "text": "What city do you live in?",
-      "validationType": "required"
-    },
-    {
-      "id": "state",
-      "text": "What state/province do you live in?",
-      "validationType": "required"
-    },
-    {
-      "id": "zipCode",
-      "text": "What is your postal/zip code?",
-      "validationType": "required"
-    },
-    {
-      "id": "country",
-      "text": "What country do you live in?",
-      "validationType": "required"
+      "id": "address",
+      "text": "What is your complete address? (Please include house number, street, city, state/province, postal code, and country)",
+      "validationType": "address"
     },
     {
       "id": "mobileNumber",
@@ -150,7 +125,7 @@
     },
     {
       "id": "ticketVesselNumber",
-      "text": "What is your ticket/vessel number?",
+      "text": "What is your ticket number?",
       "validationType": "required"
     },
     {
